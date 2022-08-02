@@ -20,7 +20,6 @@ class ClassicalPermutation:
             self.result = self.decrypt()
             self.plaintext = self.result
 
-
     def _prepare_key(self):
         key_values = []
         for k in self.key:
@@ -36,6 +35,8 @@ class ClassicalPermutation:
                 if k == sorted_key_values[s]:
                     permutation_order.append(s)
 
+        print(permutation_order)
+
         self.permutation_order = permutation_order
         self.permutation_groups = len(permutation_order)
 
@@ -47,7 +48,7 @@ class ClassicalPermutation:
         for t in range(len(self.input_text)):
             i = t % self.permutation_groups
             tmp[self.permutation_order[i]] += self.input_text[t]
-
+        print("e", tmp)
         result = ''
         for i in range(self.permutation_groups):
             result += tmp[i]
@@ -55,13 +56,24 @@ class ClassicalPermutation:
 
     def decrypt(self):
         string_len = int(len(self.input_text) / self.permutation_groups)
+        extra = len(self.input_text) - (string_len * self.permutation_groups)
+
+        print(len(self.input_text))
+        extra_groups = []
+        for i in range(extra):
+            extra_groups.append(self.permutation_order[i])
+
 
         tmp = {}
         working_text = self.input_text
         for i in range(self.permutation_groups):
-            tmp[i] = working_text[:string_len]
-            working_text = working_text[string_len:]
+            tmp_string_len = string_len
+            if i in extra_groups:
+                tmp_string_len += 1
+            tmp[i] = working_text[:tmp_string_len]
+            working_text = working_text[tmp_string_len:]
 
+        print("d", tmp)
         result = ''
         done = False
         while not done:
@@ -75,9 +87,9 @@ class ClassicalPermutation:
         return result
 
 
-password = 'efghabcd'
+password = 'eabced'
 
-x = ClassicalPermutation('abcdefghijklmnopqrstuvwx', password, 'e')
+x = ClassicalPermutation('abcdefghijklmnopqrstuvwxyz', password, 'e')
 
 print(x.result)
 
