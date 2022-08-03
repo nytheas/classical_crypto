@@ -22,20 +22,22 @@ class ClassicalPermutation:
 
     def _prepare_key(self):
         key_values = []
+
         for k in self.key:
-            new_char = ord(k)
-            if new_char not in key_values:
-                key_values.append(new_char)
+            key_values.append(ord(k))
 
         sorted_key_values = sorted(key_values)
 
         permutation_order = []
         for k in key_values:
+            search = k
             for s in range(len(sorted_key_values)):
-                if k == sorted_key_values[s]:
+                if search == sorted_key_values[s]:
                     permutation_order.append(s)
+                    sorted_key_values[s] = ''
+                    search = -1
 
-        print(permutation_order)
+        # print(permutation_order)
 
         self.permutation_order = permutation_order
         self.permutation_groups = len(permutation_order)
@@ -48,7 +50,7 @@ class ClassicalPermutation:
         for t in range(len(self.input_text)):
             i = t % self.permutation_groups
             tmp[self.permutation_order[i]] += self.input_text[t]
-        print("e", tmp)
+        # print("e", tmp)
         result = ''
         for i in range(self.permutation_groups):
             result += tmp[i]
@@ -58,7 +60,7 @@ class ClassicalPermutation:
         string_len = int(len(self.input_text) / self.permutation_groups)
         extra = len(self.input_text) - (string_len * self.permutation_groups)
 
-        print(len(self.input_text))
+        # print(len(self.input_text))
         extra_groups = []
         for i in range(extra):
             extra_groups.append(self.permutation_order[i])
@@ -73,7 +75,7 @@ class ClassicalPermutation:
             tmp[i] = working_text[:tmp_string_len]
             working_text = working_text[tmp_string_len:]
 
-        print("d", tmp)
+        # print("d", tmp)
         result = ''
         done = False
         while not done:
@@ -87,12 +89,22 @@ class ClassicalPermutation:
         return result
 
 
-password = 'eabced'
+password = 'Lord of The Rings'
 
-x = ClassicalPermutation('abcdefghijklmnopqrstuvwxyz', password, 'e')
+x = ClassicalPermutation('The third Ring, Vilya, was made of gold and adorned with a "great blue stone", probably a sapphire. The name is derived from the Quenya vilya, "air".[T 11] It is also called the Ring of Air, the Ring of Firmament, or the Blue Ring.', password, 'e')
 
 print(x.result)
 
-y = ClassicalPermutation(x.result, password, 'd')
+password2 = 'The Ring'
+
+c = ClassicalPermutation(x.result, password2, 'e')
+
+print(c.result)
+
+d = ClassicalPermutation(c.result, password2, 'd')
+
+print(d.result)
+
+y = ClassicalPermutation(d.result, password, 'd')
 
 print(y.result)
