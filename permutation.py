@@ -2,12 +2,18 @@
 class ClassicalPermutation:
     def __init__(self, input_text, key, mode='e'):
         self.input_text = input_text
-        self.key = key
-        self.result = ''
 
-        self.permutation_order = []
-        self.permutation_groups = 0
-        self._prepare_key()
+        if type(key) == str:
+            self.key = key
+            self.permutation_order = []
+            self.permutation_groups = 0
+            self._prepare_key()
+
+        elif type(key) == list:
+            self.permutation_order = key
+            self.permutation_groups = len(key)
+
+        self.result = ''
 
         self.mode = mode
         if self.mode == 'e':
@@ -65,7 +71,6 @@ class ClassicalPermutation:
         for i in range(extra):
             extra_groups.append(self.permutation_order[i])
 
-
         tmp = {}
         working_text = self.input_text
         for i in range(self.permutation_groups):
@@ -89,22 +94,22 @@ class ClassicalPermutation:
         return result
 
 
-password = 'Lord of The Rings'
-
-x = ClassicalPermutation('The third Ring, Vilya, was made of gold and adorned with a "great blue stone", probably a sapphire. The name is derived from the Quenya vilya, "air".[T 11] It is also called the Ring of Air, the Ring of Firmament, or the Blue Ring.', password, 'e')
-
-print(x.result)
-
-password2 = 'The Ring'
-
-c = ClassicalPermutation(x.result, password2, 'e')
-
-print(c.result)
-
-d = ClassicalPermutation(c.result, password2, 'd')
-
-print(d.result)
-
-y = ClassicalPermutation(d.result, password, 'd')
-
-print(y.result)
+# password = 'Lord of The Rings'
+#
+# x = ClassicalPermutation('The third Ring, Vilya, was made of gold and adorned with a "great blue stone", probably a sapphire. The name is derived from the Quenya vilya, "air".[T 11] It is also called the Ring of Air, the Ring of Firmament, or the Blue Ring.', password, 'e')
+#
+# print(x.result)
+#
+# password2 = 'The Ring'
+#
+# c = ClassicalPermutation(x.result, password2, 'e')
+#
+# print(c.result)
+#
+# d = ClassicalPermutation(c.result, password2, 'd')
+#
+# print(d.result)
+#
+# y = ClassicalPermutation(d.result, password, 'd')
+#
+# print(y.result)
