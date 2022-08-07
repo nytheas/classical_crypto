@@ -34,14 +34,15 @@ def index_of_coincidence(text, ngram=1):
     subtotal = 0
     char_count = 0
     for d in distribution:
-        subtotal += distribution[d] * (distribution[d]-1)
+        subtotal += distribution[d] * (distribution[d]+1)
         char_count += distribution[d]
-    total = subtotal / (char_count * (char_count-1))
+    total = subtotal / (char_count * (char_count+1))
 
     print(total)
+    return total
 
 
-def ngram_score(text, ngram=1):
+def ngram_score(text, ngram=2):
     ngrams = {}
     file = open("bigrams.txt", 'r')
     for i in file:
@@ -168,8 +169,128 @@ def permutation_cryptoanalysis_without_length(text):
         break
 
 
-# text = '''
-# Just as it has always been, when our memories of the ancient world fade into twilight, a new era dawns to fill the void; an unfamiliar path with a pulse of its own, a tempo not dictated by the labor of men, but accelerated by the rhythm of machines, launching the world into an age of bold innovation. From this cauldron of steel and sweat, a vision of prosperity emerged; harnessing the untold power of the elements, turning night into day, creating new designs that brought the world's stage to the masses and providing an experience that many had never imagined. The advent of mechanized warfare brought devastation like none the world had ever seen, providing a window of opportunity for some to dictate conformity as regimes spread their ideologies with a heavy hand, inciting the world to the brink of war. And yet, some chose a different path and, through their vision, brought unique prospectives to the world.
-# '''
+def compute_expected_index_of_coincidence(text):
+    text = utils.transform_to_basic_alphabet(text)
+    ngrams = {}
+    text_length = len(text)
+    file = open("bigrams.txt", 'r')
+    total = 0
+    for i in file:
+        x = i.split(";")
+        ngrams[x[0]] = int(x[1])
+        total += int(x[1])
+
+    rand_ngram = text_length / (26**2)
+
+    rand_score = 0
+    for i in range(26**2):
+        rand_score += rand_ngram * (rand_ngram+1)
+
+    rand_score = rand_score / (text_length * (text_length + 1))
+
+    total_in_ngrams = 0
+    for n in ngrams:
+        total_in_ngrams += ngrams[n]
+
+    # total_in_ngrams = text_length  ## is this for better or for worse?
+
+
+    expected_score = 0
+    for n in ngrams:
+        recomputed_n = ngrams[n] * text_length / total_in_ngrams
+        if recomputed_n < 1:
+            recomputed_n = 0
+        expected_score += recomputed_n * (recomputed_n + 1)
+
+    expected_score = expected_score / (text_length * (text_length + 1))
+
+    real_score = index_of_coincidence(text, ngram=2)
+
+    evaluation = (real_score - rand_score) / (expected_score - rand_score)
+
+    print(rand_score, expected_score, real_score, evaluation)
+    print(ngrams)
+
+
+def find_bigram_continuation(column_a, column_b, columns):
+    bigrams = []
+    for i in range(len(column_a)):
+        bigrams.append(column_a[i] + column_b[i])
+
+    trigrams_score = {}
+    ident = 0
+    for c in columns:
+        trigrams = ''
+        for i in range(len(bigrams)):
+            t = bigrams[i] + c[i]
+            t = utils.transform_to_basic_alphabet(t)
+            if len(t) == 3:
+                trigrams += t
+
+        trig_score = ngram_score(t, ngram=3)
+        trigrams_score[ident] = trig_score
+        ident += 1
+
+    print(trigrams_score)
+
+
+def find_words(text):
+    used_words = {}
+
+    words = text.split(' ')
+
+    for w in words:
+        formated_word = utils.transform_to_basic_alphabet(w)
+        if formated_word not in used_words:
+            used_words[formated_word] = 0
+        used_words[formated_word] += 1
+
+
+    used_words = dict(sorted(used_words.items(), key=lambda x: x[1], reverse=True))
+    return used_words
+
+
+def evaluate_words(words):
+    found = []
+    found_score = 0
+    not_found = []
+    not_found_score = 0
+
+    wordlist = []
+    file = open("words_100000.txt", "r")
+    for row in file:
+        wordlist.append(row.replace("\n", ""))
+
+    for w in words:
+        if w in wordlist:
+            found.append(w)
+            found_score += words[w]
+        else:
+            not_found.append(w)
+            not_found_score += words[w]
+
+    print(found)
+    print(not_found)
+    print(found_score, not_found_score)
+
+
+text = '''
+Just as it has always been, when our memories of the ancient world fade into twilight, a new era dawns to fill the void; an unfamiliar path with a pulse of its own, a tempo not dictated by the labor of men, but accelerated by the rhythm of machines, launching the world into an age of bold innovation. From this cauldron of steel and sweat, a vision of prosperity emerged; harnessing the untold power of the elements, turning night into day, creating new designs that brought the world's stage to the masses and providing an experience that many had never imagined. The advent of mechanized warfare brought devastation like none the world had ever seen, providing a window of opportunity for some to dictate conformity as regimes spread their ideologies with a heavy hand, inciting the world to the brink of war. And yet, some chose a different path and, through their vision, brought unique prospectives to the world.
+'''
+
+evaluate_words(find_words(text))
+
 #
-# frequency_analysis(text, ngram=2, excluded_chars=[' ', "\n"])
+#
+#
+# # frequency_analysis(text, ngram=2, excluded_chars=[' ', "\n"])
+#
+# compute_expected_index_of_coincidence(text)
+# index_of_coincidence(text, ngram=2)
+
+
+
+# x = frequency_analysis(utils.transform_to_basic_alphabet(text), ngram=2)
+#
+# for i in x:
+#     print(i, x[i])

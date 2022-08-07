@@ -18,8 +18,8 @@ ciphertext = permutation.ClassicalPermutation(basetext, password, 'e').result
 # cryptoanalysis.frequency_analysis(ciphertext)
 
 
-cryptoanalysis.index_of_coincidence(basetext)
-cryptoanalysis.index_of_coincidence(ciphertext)
+# cryptoanalysis.index_of_coincidence(basetext)
+# cryptoanalysis.index_of_coincidence(ciphertext)
 
 
 
@@ -35,8 +35,7 @@ cryptoanalysis.index_of_coincidence(ciphertext)
 print(ciphertext)
 
 
-# cryptoanalysis.permutation_cryptoanalysis(ciphertext, 4)
-
+# cryptoanalysis.permutation_cryptoanalysis(ciphertext, 8)
 cryptoanalysis.permutation_cryptoanalysis_without_length(ciphertext)
 
 # print(permutation.ClassicalPermutation(ciphertext, 'hgfedcba', 'd').result)
