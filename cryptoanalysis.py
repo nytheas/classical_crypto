@@ -1,6 +1,7 @@
 import utils
 import permutation
 
+
 def frequency_analysis(text, char_len=1, ngram=1, excluded_chars=[], verbose=False):
     result = {}
     char_count = 0
@@ -8,10 +9,10 @@ def frequency_analysis(text, char_len=1, ngram=1, excluded_chars=[], verbose=Fal
         text = text.replace(c, "")
 
     while len(text) > 0:
-        character = text[:char_len*ngram]
+        character = text[:char_len * ngram]
         text = text[char_len:]
         char_count += 1
-        if len(character) == char_len*ngram:
+        if len(character) == char_len * ngram:
             if character not in result:
                 result[character] = 0
             result[character] += 1
@@ -21,11 +22,10 @@ def frequency_analysis(text, char_len=1, ngram=1, excluded_chars=[], verbose=Fal
     # print("Total of %s unique characters" % len(result))
     if verbose:
         for c in result:
-            print(c, result[c], round(result[c]/char_count*100, 2))
+            print(c, result[c], round(result[c] / char_count * 100, 2))
     else:
         # print(result)
         return result
-
 
 
 def index_of_coincidence(text, ngram=1):
@@ -34,9 +34,9 @@ def index_of_coincidence(text, ngram=1):
     subtotal = 0
     char_count = 0
     for d in distribution:
-        subtotal += distribution[d] * (distribution[d]+1)
+        subtotal += distribution[d] * (distribution[d] + 1)
         char_count += distribution[d]
-    total = subtotal / (char_count * (char_count+1))
+    total = subtotal / (char_count * (char_count + 1))
 
     print(total)
     return total
@@ -44,17 +44,27 @@ def index_of_coincidence(text, ngram=1):
 
 def ngram_score(text, ngram=2):
     ngrams = {}
-    file = open("bigrams.txt", 'r')
-    for i in file:
-        x = i.split(";")
-        ngrams[x[0]] = int(x[1])
+    if ngram == 2:
+        file = open("bigrams.txt", 'r')
+        for i in file:
+            x = i.split(";")
+            ngrams[x[0]] = int(x[1])
+    elif ngram == 3:
+        file = open("trigrams.txt", 'r')
+        for i in file:
+            x = i.split(";")
+            ngrams[x[0]] = int(x[1])
+    else:
+        raise ValueError("not implemented yet")
 
     distribution = frequency_analysis(utils.transform_to_basic_alphabet(text), ngram=ngram)
 
     subscore = 0
     for d in distribution:
-        subscore += ngrams[d] * distribution[d]
+        if d in ngrams:
+            subscore += ngrams[d] * distribution[d]
 
+    # print(distribution)
     return subscore
 
 
@@ -62,7 +72,7 @@ def permutation_cryptoanalysis(text, password_length):
     columns = {}
     column_length = int(len(text) / password_length)
     for i in range(password_length):
-        columns[i] = text[column_length * i: column_length * (i+1)]
+        columns[i] = text[column_length * i: column_length * (i + 1)]
 
     results = {}
     for i in range(password_length):
@@ -81,7 +91,6 @@ def permutation_cryptoanalysis(text, password_length):
     for i in expected_password:
         exp_pass.append(int(i))
 
-
     resulted_text = permutation.ClassicalPermutation(text, exp_pass, 'd').result
     score = ngram_score(resulted_text, ngram=2)
     return exp_pass, score
@@ -90,6 +99,10 @@ def permutation_cryptoanalysis(text, password_length):
 
 def evaluate_columns(a, b):
     bigrams = []
+    while len(a) > len(b):
+        b += " "
+    while len(a) < len(b):
+        a += " "
     for i in range(len(a)):
         bigrams.append(a[i] + b[i])
 
@@ -97,8 +110,8 @@ def evaluate_columns(a, b):
 
     for b in bigrams:
         bigram = utils.transform_to_basic_alphabet(b)
-        if len(b) == 2:
-            result += b
+        if len(bigram) == 2:
+            result += bigram
 
     score = ngram_score(result, ngram=2)
     return score
@@ -112,7 +125,7 @@ def order_columns(scored_columns, columns_count):
         c = s.split(',')
 
         if c[0] not in checked_columns and c[1] not in checked_columns:
-            ordered[len(ordered)+1] = [c[0], c[1]]
+            ordered[len(ordered) + 1] = [c[0], c[1]]
             checked_columns.append(c[0])
             checked_columns.append(c[1])
         elif c[0] not in checked_columns:
@@ -144,8 +157,27 @@ def order_columns(scored_columns, columns_count):
 
         for o in ordered:
             if len(ordered[o]) == columns_count:
-                print(ordered[o])
+                # print(ordered[o])
                 return ordered[o]
+
+
+def find_alternative_column(scored_columns, expected_column, before=True):
+    if before:
+        value = expected_column.split(",")[1]
+    else:
+        value = expected_column.split(",")[0]
+    check = False
+    for c in scored_columns:
+        if check:
+            if before:
+                if c.split(",")[1] == value:
+                    return c
+            else:
+                if c.split(",")[0] == value:
+                    return c
+
+        if c == expected_column:
+            check = True
 
 
 def permutation_cryptoanalysis_without_length(text):
@@ -180,11 +212,11 @@ def compute_expected_index_of_coincidence(text):
         ngrams[x[0]] = int(x[1])
         total += int(x[1])
 
-    rand_ngram = text_length / (26**2)
+    rand_ngram = text_length / (26 ** 2)
 
     rand_score = 0
-    for i in range(26**2):
-        rand_score += rand_ngram * (rand_ngram+1)
+    for i in range(26 ** 2):
+        rand_score += rand_ngram * (rand_ngram + 1)
 
     rand_score = rand_score / (text_length * (text_length + 1))
 
@@ -193,7 +225,6 @@ def compute_expected_index_of_coincidence(text):
         total_in_ngrams += ngrams[n]
 
     # total_in_ngrams = text_length  ## is this for better or for worse?
-
 
     expected_score = 0
     for n in ngrams:
@@ -208,8 +239,8 @@ def compute_expected_index_of_coincidence(text):
 
     evaluation = (real_score - rand_score) / (expected_score - rand_score)
 
-    print(rand_score, expected_score, real_score, evaluation)
-    print(ngrams)
+    # print(rand_score, expected_score, real_score, evaluation)
+    # print(ngrams)
 
 
 def find_bigram_continuation(column_a, column_b, columns):
@@ -245,7 +276,6 @@ def find_words(text):
             used_words[formated_word] = 0
         used_words[formated_word] += 1
 
-
     used_words = dict(sorted(used_words.items(), key=lambda x: x[1], reverse=True))
     return used_words
 
@@ -264,21 +294,21 @@ def evaluate_words(words):
     for w in words:
         if w in wordlist:
             found.append(w)
-            found_score += words[w]
+            found_score += words[w] * len(w)
         else:
             not_found.append(w)
             not_found_score += words[w]
 
-    print(found)
-    print(not_found)
-    print(found_score, not_found_score)
-
-
-text = '''
-Just as it has always been, when our memories of the ancient world fade into twilight, a new era dawns to fill the void; an unfamiliar path with a pulse of its own, a tempo not dictated by the labor of men, but accelerated by the rhythm of machines, launching the world into an age of bold innovation. From this cauldron of steel and sweat, a vision of prosperity emerged; harnessing the untold power of the elements, turning night into day, creating new designs that brought the world's stage to the masses and providing an experience that many had never imagined. The advent of mechanized warfare brought devastation like none the world had ever seen, providing a window of opportunity for some to dictate conformity as regimes spread their ideologies with a heavy hand, inciting the world to the brink of war. And yet, some chose a different path and, through their vision, brought unique prospectives to the world.
-'''
-
-evaluate_words(find_words(text))
+    # print(found)
+    # print(not_found)
+    # print(found_score, not_found_score)
+    return found_score
+#
+# text = '''
+# Just as it has always been, when our memories of the ancient world fade into twilight, a new era dawns to fill the void; an unfamiliar path with a pulse of its own, a tempo not dictated by the labor of men, but accelerated by the rhythm of machines, launching the world into an age of bold innovation. From this cauldron of steel and sweat, a vision of prosperity emerged; harnessing the untold power of the elements, turning night into day, creating new designs that brought the world's stage to the masses and providing an experience that many had never imagined. The advent of mechanized warfare brought devastation like none the world had ever seen, providing a window of opportunity for some to dictate conformity as regimes spread their ideologies with a heavy hand, inciting the world to the brink of war. And yet, some chose a different path and, through their vision, brought unique prospectives to the world.
+# '''
+#
+# evaluate_words(find_words(text))
 
 #
 #
@@ -287,7 +317,6 @@ evaluate_words(find_words(text))
 #
 # compute_expected_index_of_coincidence(text)
 # index_of_coincidence(text, ngram=2)
-
 
 
 # x = frequency_analysis(utils.transform_to_basic_alphabet(text), ngram=2)

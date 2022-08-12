@@ -10,7 +10,10 @@ class ClassicalPermutation:
             self._prepare_key()
 
         elif type(key) == list:
-            self.permutation_order = key
+            self.permutation_order = []
+            for k in key:
+                self.permutation_order.append(int(k))
+            # self.permutation_order = key
             self.permutation_groups = len(key)
 
         self.result = ''
